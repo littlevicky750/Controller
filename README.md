@@ -3,6 +3,6 @@ for esp32_s3.
 
 
 If compile with Arduio 2.0  
--install library list in platform.ini  
+-install library list in platformio.ini  
 -install library in /lib  
--Add #define list in platform.ini in the beginning of src.ino 
+-Add #define list in platformio.ini in the beginning of src.ino 
