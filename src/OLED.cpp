@@ -69,8 +69,8 @@ void OLED::Initialize()
   u8g2.clear();
   int w = u8g2.getStrWidth("Wonder Construct");
   u8g2.drawStr(64-w/2, 30, "Wonder Construct");
-  w = u8g2.getStrWidth("Controller V3.0");
-  u8g2.drawStr(64-w/2, 50, "Controller V3.0");
+  w = u8g2.getStrWidth("Controller V4");
+  u8g2.drawStr(64-w/2, 50, "Controller V4");
   u8g2.sendBuffer();
 }
 
