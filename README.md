@@ -1,6 +1,7 @@
-# Controller_V3
+# Controller_V4
 for esp32_s3.
 
+Is not compatible to V3 and before driver's version.
 
 If compile with Arduio 2.0  
 -install library list in platformio.ini  
