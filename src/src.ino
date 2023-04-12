@@ -142,16 +142,16 @@ void SaveDataCallback(void *pvParameters)
     }
     else
     {
-      digitalWrite(4,LOW);
-      if(sdCard.CheckCount != -1)
-        digitalWrite(16,LOW);
+      digitalWrite(4, LOW);
+      if (sdCard.CheckCount != -1)
+        digitalWrite(16, LOW);
       if (!sdCard.CheckState())
       {
         msg.BufferCheck();
       }
       else
       {
-        digitalWrite(16,HIGH);
+        digitalWrite(16, HIGH);
         if (!sdCard.Initialize)
         {
           sdCard.CreateFile(Clock.DateStamp("", 2));
@@ -193,10 +193,15 @@ void SendDataCallback(void *pvParameters)
 {
   for (;;)
   {
-    if (SendCommand && NodeNumber[0] != 0 && NodeNumber[1] == 0)
+    if (NodeNumber[0] != 0)
     {
-      control.Estimate(imu.LocalAngleShift());
-      BLE_Send(control.V);
+      float WallAngle = imu.LocalAngleShift();
+      BLE_Send_Wall_Angle(WallAngle);
+      if (SendCommand && NodeNumber[1] == 0)
+      {
+        control.Estimate(imu.LocalAngleShift());
+        BLE_Send(control.V);
+      }
     }
     vTaskDelay(control.dt_ms);
   }

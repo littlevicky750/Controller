@@ -25,18 +25,19 @@
 bool UserCommand = false;
 
 BLEScan *pBLEScan;
-String Characteristic[8] = {"Roll", "Pitch", "Yaw", "Serial", "Command", "TimeStep", "TimeSet", "HaveSub"};
+String Characteristic[9] = {"Roll", "Pitch", "Yaw", "Serial", "Command", "TimeStep", "TimeSet", "HaveSub", "WallAng"};
 
 BLEUUID ServersUUID("2222eeee-00f2-0123-4567-abcdef123456");
-BLEUUID ServiceUUID("1111eeee-00f2-0123-4567-abcdef123456");
+BLEUUID ServiceUUID("1111eeee-00f4-0123-4567-abcdef123456");
 BLEUUID RollAngUUID("a001eeee-00f2-0123-4567-abcdef123456");
 BLEUUID PitcAngUUID("a002eeee-00f2-0123-4567-abcdef123456");
 BLEUUID YawwAngUUID("a003eeee-00f2-0123-4567-abcdef123456");
 BLEUUID NodeNumUUID("0000eeee-00f2-0123-4567-abcdef123456");
-BLEUUID CommandUUID("c000eeee-00f2-0123-4567-abcdef123456");
-BLEUUID TimeStpUUID("c001eeee-00f2-0123-4567-abcdef123456");
-BLEUUID TimeSetUUID("c002eeee-00f2-0123-4567-abcdef123456");
-BLEUUID HaveSubUUID("d155eeee-00f2-0123-4567-abcdef123456");
+BLEUUID CommandUUID("c000eeee-00f4-0123-4567-abcdef123456");
+BLEUUID TimeStpUUID("c001eeee-00f4-0123-4567-abcdef123456");
+BLEUUID TimeSetUUID("c002eeee-00f4-0123-4567-abcdef123456");
+BLEUUID HaveSubUUID("d155eeee-00f4-0123-4567-abcdef123456");
+BLEUUID WallAngUUID("a004eeee-00f4-0123-4567-abcdef123456");
 
 char DeviceID;
 const int MaxServiceNum = 10;
@@ -54,7 +55,7 @@ BLEUUID ThisUUID;
 BLEClient *TempCliecnt;
 BLEClient *ConnectClient[MaxServiceNum];
 BLERemoteService *RequestService;
-BLERemoteCharacteristic *RequestCharacteristic[8];
+BLERemoteCharacteristic *RequestCharacteristic[9];
 class MyClientCallback;
 class BankClientCallback;
 class pBLE;
@@ -85,6 +86,24 @@ void Net_Initialize()
   pBLEScan->setWindow(100);
   xTaskCreatePinnedToCore(BLEInitScanClock, "BLE Init Scan Clock", 2048, NULL, 1, &InitScan, 0);
   memset(DeviceType, -1, sizeof(DeviceType));
+}
+
+void BLE_Send_Wall_Angle(float Angle) // Send the command to Servr
+{
+  for (int i = 0; i < NodeNumber[0]; i++)
+  {
+    if (DeviceType[0][i] != 2)
+    {
+      bool SendSuccess = ConnectClient[i]->getService(ServiceUUID)->getCharacteristic(WallAngUUID)->writeValue(Angle);
+      // Serial.print(millis());Serial.print(" Send ");Serial.println(command_dtheta,6);
+      if (!SendSuccess)
+      {
+        ConnectClient[i]->disconnect();
+        return;
+      }
+    }
+  }
+  // Serial.print(millis());Serial.print("-->");Serial.println(String(command_dtheta,6));
 }
 
 void BLE_Send(float command_dtheta) // Send the command to Servr
@@ -394,10 +413,11 @@ bool ConnectToDevice(BLEAddress RequestAddress, bool isSubSensor) // Check UUID 
     RequestCharacteristic[5] = RequestService->getCharacteristic(TimeStpUUID); // Write
     RequestCharacteristic[6] = RequestService->getCharacteristic(TimeSetUUID); // Write
     RequestCharacteristic[7] = RequestService->getCharacteristic(HaveSubUUID); // Notify
+    RequestCharacteristic[8] = RequestService->getCharacteristic(WallAngUUID); // Write
   }
-  int CharacteristicNum = (isSubSensor) ? 4 : 8;
-  bool isRequestNotify[8] = {true, true, true, true, true, false, false, true};
-  bool isRequestWrites[8] = {false, false, false, true, true, true, true, false};
+  int CharacteristicNum = (isSubSensor) ? 4 : 9;
+  bool isRequestNotify[9] = {true, true, true, true, true, false, false, true, false};
+  bool isRequestWrites[9] = {false, false, false, true, true, true, true, false, true};
 
   for (int i = 0; i < CharacteristicNum; i++)
   {
@@ -462,6 +482,7 @@ bool ConnectToDevice(BLEAddress RequestAddress, bool isSubSensor) // Check UUID 
     RequestCharacteristic[5]->writeValue(control.dt_ms);
     RequestCharacteristic[6]->writeValue(Clock.TimeStamp());
     RequestCharacteristic[7]->subscribe(true, MDrWithSubNotifyCB);
+    RequestCharacteristic[8]->writeValue(imu.LocalAngleShift());
   }
   return true;
 }
