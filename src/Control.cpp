@@ -8,13 +8,13 @@ void Control::Start(bool &SendCommand, double AngleEstimate, SDCard *pSD)
 {
     isStable = false;
     isStop = false;
-    double Xc = AngleCommand  * PI / 180.0;
+    double Xc = AngleCommand * PI / 180.0;
     double Xe = AngleEstimate * PI / 180.0;
     Xt[0] = Xe;
     Vt[0] = 0;
     int direction = (Xc > Xe) ? 1 : -1;
     t_command = 0;
-    double omega_M = V_Max / H;
+    double omega_M = V_Max / H / sin(PI / 180 * 70);
     double alpha_M = A_Max / H - omega_M * omega_M;
     int t = 0;
     if (abs(Xc - Xe) < omega_M * omega_M / alpha_M)
@@ -81,7 +81,7 @@ void Control::Estimate(double AngleEstimate)
 {
     // Assume no time delay issue
     // calculate in radian
-    if (isStop /* || isStable */ && abs(AngleCommand - AngleEstimate) > 0.1 )
+    if (isStop /* || isStable */ && abs(AngleCommand - AngleEstimate) > 0.1)
     {
         bool NoUsed;
         Start(NoUsed, AngleEstimate, p_SD);
@@ -106,9 +106,9 @@ void Control::Estimate(double AngleEstimate)
             V = 0;
             if (t_command >= 5000 || Vt[t_command] == 0)
             {
-                //isStable = true;
-                //Stop();
-                //delay(1500);
+                // isStable = true;
+                // Stop();
+                // delay(1500);
             }
         }
         E_t0 = E_t1;

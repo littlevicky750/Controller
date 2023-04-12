@@ -122,6 +122,8 @@ bool IMU::Read()
   else if (Count[0] == -1)
   {
     Count[0] = (millis() - LocalEulerOutsideStDev < 2000);
+    if(!Average())
+      Count[0] = 1;
     Average();
   }
   return isUpdate;
